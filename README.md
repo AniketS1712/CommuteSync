@@ -311,14 +311,6 @@ This project is licensed under the MIT License — see [LICENSE](LICENSE) for de
 
 ---
 
-## 👥 Team
-
-- **Frontend:** [Collaborator Name]
-- **Backend/ML:** [Your Name]
-- **Advisors:** [Mentors]
-
----
-
 *Built for smart urban mobility. Last updated: February 2026.*
 
 
