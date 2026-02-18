@@ -1,0 +1,17 @@
+CommuteSync – Model 2: Optimal Meeting Point Suggestion
+=======================================================
+Meeting points: 300
+Avg landmark dist: 7.818 km
+
+Top Landmarks:
+landmark
+Rohini Sector 18          81
+Dwarka Sector 21          63
+Uttam Nagar East          43
+Vasant Kunj Mall          30
+Model Town Metro          20
+Nehru Place               13
+Janakpuri West Metro      11
+Dilshad Garden Metro       7
+Preet Vihar Metro          6
+Botanical Garden Noida     6

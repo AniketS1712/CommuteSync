@@ -1,0 +1,4 @@
+model,mae,rmse
+Ridge Regression (Baseline),23.6011,27.486
+Gradient Boosting,23.5271,27.6338
+XGBoost Regressor,23.6139,27.8059

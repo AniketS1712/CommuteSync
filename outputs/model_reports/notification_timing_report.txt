@@ -1,0 +1,13 @@
+CommuteSync – Model 4: Notification Timing Optimization
+=======================================================
+
+
+Ridge Regression
+------------------------------
+  MAE : 13.8512 min
+  RMSE: 20.0732 min
+
+Gradient Boosting
+------------------------------
+  MAE : 14.5391 min
+  RMSE: 21.1776 min

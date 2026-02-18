@@ -1,0 +1,14 @@
+CommuteSync – Model 1: Commute Overlap Prediction
+==================================================
+Total users    : 5000
+Clusters       : 160
+Noise points   : 3791
+Matched pairs  : 509
+
+Sample Matched Pairs:
+ cluster_id  user_a  user_b  home_dist_km  time_diff_min
+          0       2    1640         1.726           11.4
+          0       2    2192         2.410            0.0
+          0    1640    2192         2.103           11.4
+          2      54    2861         2.100            5.4
+          2      54    3618         2.727            7.2
