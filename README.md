@@ -1,186 +1,324 @@
-# CommuteSync AI — Ideathon Demo
+# CommuteSync — Smart Carpooling with AI
 
-> **Smart Carpooling Powered by 4 AI Models**
+> **Intelligent Commuter Matching Powered by Machine Learning**
 
-CommuteSync uses machine learning to intelligently match commuters in Delhi, suggest optimal meeting points, predict whether users will accept suggestions, and time notifications for maximum impact.
+CommuteSync is a full-stack application combining a **Flutter mobile frontend** with **4 AI models** to intelligently match commuters in Delhi, suggest optimal meeting points, predict acceptance rates, and optimize notification timing for maximum engagement.
+
+**Tech Stack:**
+- **Frontend:** Flutter (Android & iOS)
+- **Backend:** Python FastAPI / Flask (voice authentication & API)
+- **ML:** scikit-learn, XGBoost, TensorFlow
 
 ---
 
 ## 🏗️ Project Structure
 
 ```
-CommuteSync_AI_Demo/
-├── data/
-│   ├── generate_dataset.py       ← Synthetic dataset generator
-│   └── dummy_commute_data.csv    ← 5,000 user synthetic dataset
-├── models/
-│   ├── commute_overlap_model.py  ← Model 1: Overlap clustering
+CommuteSync/
+├── lib/                          ← Flutter frontend (Dart)
+│   ├── screens/                  ← UI screens
+│   ├── models/                   ← Dart data models
+│   ├── widgets/                  ← Reusable widgets
+│   └── services/                 ← API calls to backend
+├── android/                      ← Android native config
+├── ios/                          ← iOS native config
+├── web/                          ← Web version (Flutter)
+├── backend/                      ← Python API Server
+│   ├── main.py                   ← FastAPI/Flask server
+│   ├── models/                   ← ML classifiers
+│   ├── utils/                    ← Helper utilities
+│   ├── dataset/                  ← Training data
+│   ├── tests/                    ← Unit tests
+│   └── requirements.txt
+├── data/                         ← Datasets
+│   ├── dummy_commute_data.csv    ← 500 synthetic Delhi users
+│   ├── matched_pairs.csv         ← Clustered matches
+│   ├── meeting_points.csv        ← Optimal pickup points
+│   ├── acceptance_dataset.csv    ← Training data (Model 3)
+│   └── optimal_notification_times.csv ← Timing predictions (Model 4)
+├── models/                       ← AI Model Implementations
+│   ├── commute_overlap_model.py  ← Model 1: Route clustering
 │   ├── meeting_point_model.py    ← Model 2: Meeting point suggestion
 │   ├── acceptance_prediction_model.py ← Model 3: Acceptance prediction
-│   └── notification_timing_model.py   ← Model 4: Notification timing
-├── utils/
-│   ├── geo_utils.py              ← Haversine, centroid, normalization
-│   └── evaluation_metrics.py    ← Reusable metrics for all models
-├── outputs/
-│   ├── cluster_visuals/          ← Cluster maps & matched pair plots
-│   ├── meeting_point_maps/       ← Per-group meeting point maps
-│   └── model_reports/            ← CSVs, charts, saved models (.joblib)
-├── notebooks/
-│   └── demo_visualization.ipynb ← Jupyter demo notebook
-├── run_all.py                    ← Master pipeline (runs everything)
-└── requirements.txt
+│   ├── notification_timing_model.py   ← Model 4: Notification timing
+│   ├── weights/                  ← Trained model artifacts (.joblib)
+│   └── __init__.py
+├── utils/                        ← Shared utilities
+│   ├── geo_utils.py              ← Haversine distance, clustering helpers
+│   └── __init__.py
+├── notebooks/                    ← Analysis & visualization
+│   ├── commute_overlap_map.html  ← Interactive clusters (Folium)
+│   └── meeting_points_map.html   ← Meeting points visualization
+├── generate_dataset.py           ← Synthetic dataset generator
+├── run_all.py                    ← Master pipeline (runs all models)
+├── pubspec.yaml                  ← Flutter dependencies
+├── requirements.txt              ← Python dependencies
+└── README.md                     ← This file
 ```
 
 ---
 
 ## 🚀 Quick Start
 
-```bash
-# Install dependencies
-pip install -r requirements.txt
+### Prerequisites
+- **Flutter SDK** (for mobile/web)
+- **Python 3.8+** (for AI models & backend)
+- **Git**
 
-# Run the full pipeline
+### Installation
+
+#### 1. Clone Repository
+```bash
+git clone https://github.com/YOUR_USERNAME/CommuteSync.git
+cd CommuteSync
+```
+
+#### 2. Setup Python Environment
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+#### 3. Setup Flutter (Optional for frontend development)
+```bash
+flutter pub get
+flutter run  # Run on emulator/device
+```
+
+### Run the AI Pipeline
+```bash
+# Generate synthetic dataset (500 Delhi commuters)
+python generate_dataset.py
+
+# Run all 4 AI models
 python run_all.py
 
 # Or run individual models
 python models/commute_overlap_model.py
-python models/meeting_point_model.py
 python models/acceptance_prediction_model.py
+python models/meeting_point_model.py
 python models/notification_timing_model.py
+```
+
+### Start Backend Server (if applicable)
+```bash
+cd backend
+python main.py  # Starts API on http://localhost:8000
 ```
 
 ---
 
-## 🤖 Model Details
+## 🤖 AI Models Overview
 
-### Model 1 — Commute Overlap Prediction
+### Model 1 — Commute Overlap Clustering
+**Goal:** Find users with overlapping home locations & departure times
 
-| Item | Detail |
+| Aspect | Details |
 |---|---|
-| Algorithm | DBSCAN (HDBSCAN if installed) |
-| Features | home lat/lon + commute time (normalized) |
-| Evaluation | Silhouette Score, Davies–Bouldin Index |
-| Output | Cluster labels + matched pair CSV |
+| Algorithm | K-Means clustering on normalized geo-temporal features |
+| Features | home_lat, home_lon, office_lat, office_lon, commute_time_minutes |
+| Output | Cluster assignments, matched pairs CSV, Folium map |
+| Key Metric | Silhouette Score |
 
-Uses `normalize_coords_for_clustering()` to combine spatial and temporal dimensions into a unified feature space. DBSCAN finds dense regions of users who live near each other AND depart at similar times.
-
-**Outputs:** `outputs/cluster_visuals/cluster_map.png`, `matched_pairs.png`, `matched_pairs.csv`
+**Outputs:** 
+- `data/matched_pairs.csv` — Users with high overlap
+- `notebooks/commute_overlap_map.html` — Interactive cluster visualization
+- `models/weights/commute_overlap_*.joblib` — Trained KMeans + scaler
 
 ---
 
 ### Model 2 — Optimal Meeting Point Suggestion
+**Goal:** Suggest fair pickup points for commuter groups
 
-| Item | Detail |
+| Aspect | Details |
 |---|---|
-| Algorithm | Geographic centroid + Delhi transit hub ranking |
-| Scoring | avg distance, fairness (std/mean), max distance |
-| Visualization | Static matplotlib map + folium HTML (if available) |
+| Algorithm | Geographic centroid calculation + proximity scoring |
+| Scoring | Average detour distance, fairness (std/mean), accessibility |
+| Output | Pickup/dropoff coordinates, landmark names (via Nominatim) |
 
-For each matched group, the model evaluates the geographic centroid and 12 known Delhi transit hubs as meeting point candidates, scoring each on proximity, fairness, and accessibility.
-
-**Outputs:** `outputs/meeting_point_maps/meeting_point_group_N.png`
+**Outputs:**
+- `data/meeting_points.csv` — Meeting coordinates & detour distances
+- `notebooks/meeting_points_map.html` — Visual routes to pickup points
+- `models/weights/meeting_points_data.joblib` — Computed meeting points
 
 ---
 
-### Model 3 — User Acceptance Prediction
+### Model 3 — Acceptance Prediction
+**Goal:** Predict if a user will accept a carpool suggestion (Binary Classification)
 
-| Item | Detail |
+| Aspect | Details |
 |---|---|
-| Task | Binary classification (accept / decline) |
-| Algorithms | Logistic Regression, Random Forest, Gradient Boosting, XGBoost* |
-| Tuning | GridSearchCV (3-fold StratifiedKFold) on Random Forest |
+| Algorithms | Random Forest, Logistic Regression |
+| Features | overlap_score, time_diff_min, past_acceptance_rate, home_dist_km, office_dist_km |
 | Metrics | Accuracy, Precision, Recall, F1, ROC-AUC |
+| Tuning | Hyperparameter optimization via GridSearchCV |
 
-**Features used:**
-- `overlap_score` — spatial-temporal similarity
-- `time_diff_minutes` — commute time alignment
-- `dist_home_office_km` — route length
-- `past_acceptance_rate` — user history
-- `commute_duration_min` — trip time
-- `day_of_week` — weekday effect
-
-**Outputs:** `outputs/model_reports/acceptance_roc_curves.png`, `acceptance_model_comparison.csv`, `acceptance_model_best.joblib`
+**Outputs:**
+- `data/acceptance_dataset.csv` — Training labels
+- `models/weights/acceptance_*.joblib` — RF + LR models + scaler
+- `notebooks/acceptance_evaluation.png` — Confusion matrices & ROC curves
 
 ---
 
 ### Model 4 — Notification Timing Optimization
+**Goal:** Predict the best time to send notifications (Regression)
 
-| Item | Detail |
+| Aspect | Details |
 |---|---|
-| Task | Regression (predict optimal notification minutes) |
-| Algorithms | Ridge Regression (baseline), Gradient Boosting, XGBoost* |
-| Metrics | MAE, RMSE |
+| Algorithms | Gradient Boosting, Ridge Regression |
+| Target | Optimal notification time (minutes from midnight) |
+| Features | commute_time_minutes, past_avg_response, day_of_week, sent_time_minutes, response_std |
+| Metrics | MAE (Mean Absolute Error), RMSE, R² |
 
-Predicts the optimal time (minutes since midnight) to send a carpool notification so the user is most likely to be available and receptive.
+**Example:** User usually departs 08:30 → Send notification at **07:22** (68 min before)
 
-**Example:** User departs at 08:30 on Monday → suggested notification: **07:22**
-
-**Outputs:** `outputs/model_reports/notification_timing_residuals.png`, `notification_timing_predictions.png`, `notification_model_best.joblib`
+**Outputs:**
+- `data/optimal_notification_times.csv` — Per-user optimal times
+- `models/weights/notification_*.joblib` — GBR + Ridge models + scaler
+- `notebooks/notification_timing_evaluation.png` — Prediction accuracy plots
 
 ---
 
 ## 📊 Dataset
 
-`dummy_commute_data.csv` — 5,000 synthetic Delhi commuters:
+**`dummy_commute_data.csv`** — 500 synthetic Delhi area commuters
 
-| Column | Description |
-|---|---|
-| `user_id` | Unique identifier (U00000–U04999) |
-| `home_lat/lon` | Random coordinates within Delhi bounding box |
-| `office_lat/lon` | Random destination coordinates |
-| `commute_time` | Departure time (HH:MM), 07:00–10:30 |
-| `commute_time_minutes` | Numeric departure time |
-| `overlap_score` | Spatial-temporal overlap with neighbors (0–1) |
-| `time_diff_minutes` | Time gap from nearest match |
-| `accepted` | Binary: did user accept carpool suggestion? |
-| `past_acceptance_rate` | Historical acceptance rate |
-| `optimal_notify_minutes` | Ground truth for Model 4 |
-| `day_of_week` | 0=Monday, 6=Sunday |
-| `response_time_lag_min` | How fast user typically responds |
+| Column | Description | Example |
+|---|---|---|
+| `user_id` | Unique identifier | "U001" |
+| `home_lat` | Home latitude (Delhi NCR) | 28.6139 |
+| `home_lon` | Home longitude | 77.2090 |
+| `office_lat` | Office latitude | 28.5355 |
+| `office_lon` | Office longitude | 77.3910 |
+| `commute_time` | Departure time (HH:MM) | "08:30" |
+| `commute_time_minutes` | Numeric departure time | 510 |
+| `past_acceptance_rate` | Historical acceptance probability | 0.75 |
+| `acceptance_history` | Past 10 responses (binary string) | "1,0,1,1,1,0,1,1,0,1" |
+| `avg_response_time_minutes` | Avg response time | 45 |
+| `response_times` | Historical response times | "432,450,465,..." |
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Library | Role |
+### Backend/ML
+| Library | Purpose |
 |---|---|
-| `pandas`, `numpy` | Data manipulation |
-| `scikit-learn` | DBSCAN, classification, regression, GridSearchCV |
-| `xgboost` | Gradient boosted trees (optional) |
-| `hdbscan` | Density-based clustering (optional) |
+| `pandas`, `numpy` | Data manipulation & matrices |
+| `scikit-learn` | KMeans, Logistic Regression, Random Forest |
 | `matplotlib`, `seaborn` | Static visualizations |
-| `folium` | Interactive maps (optional) |
-| `joblib` | Model serialization |
+| `folium` | Interactive maps |
+| `geopy` | Reverse geocoding (landmark names) |
+| `joblib` | Model persistence |
+| `FastAPI` / `Flask` | REST API (optional backend) |
 
-`*` = optional dependency; graceful fallback if not installed
-
----
-
-## 📁 Outputs Reference
-
-```
-outputs/
-├── cluster_visuals/
-│   ├── cluster_map.png           ← Color-coded user clusters
-│   ├── matched_pairs.png         ← Lines between matched users
-│   └── matched_pairs.csv         ← Detailed match data
-├── meeting_point_maps/
-│   ├── meeting_point_group_0.png ← Group 0 map
-│   ├── meeting_point_group_1.png
-│   └── meeting_point_group_2.png
-└── model_reports/
-    ├── acceptance_model_comparison.csv
-    ├── acceptance_model_comparison_chart.png
-    ├── acceptance_roc_curves.png
-    ├── acceptance_feature_importance.png
-    ├── acceptance_model_best.joblib
-    ├── notification_timing_report.csv
-    ├── notification_timing_residuals.png
-    ├── notification_timing_predictions.png
-    ├── notification_feature_importance.png
-    └── notification_model_best.joblib
-```
+### Frontend
+| Framework | Purpose |
+|---|---|
+| `Flutter` | Cross-platform mobile (Android/iOS/Web) |
+| `Dart` | Flutter programming language |
+| `Provider` | State management (optional) |
+| `http` | API communication |
 
 ---
 
-*Built for Ideathon 2025 — CommuteSync Team*
+## 📁 Key Output Files
+
+After running `python run_all.py`:
+
+```
+data/
+├── dummy_commute_data.csv       ← Input dataset
+├── matched_pairs.csv            ← Cluster outputs (Model 1)
+├── meeting_points.csv           ← Suggested pickups (Model 2)
+├── acceptance_dataset.csv       ← Training data (Model 3)
+└── optimal_notification_times.csv ← Predictions (Model 4)
+
+models/weights/
+├── commute_overlap_kmeans.joblib   ← Model 1 weights
+├── commute_overlap_scaler.joblib
+├── acceptance_rf.joblib            ← Model 3 weights
+├── acceptance_lr.joblib
+├── acceptance_scaler.joblib
+├── notification_gbr.joblib         ← Model 4 weights
+├── notification_ridge.joblib
+└── notification_scaler.joblib
+
+notebooks/
+├── commute_overlap_map.html     ← Interactive cluster map
+└── meeting_points_map.html      ← Interactive meeting point map
+```
+
+---
+
+## 🔧 Configuration
+
+### Delhi Geographic Bounds
+```python
+DELHI_LAT_MIN, DELHI_LAT_MAX = 28.40, 28.88
+DELHI_LON_MIN, DELHI_LON_MAX = 76.84, 77.35
+```
+
+### Model Parameters
+- **Dataset Size:** 500 users (configurable in `generate_dataset.py`)
+- **Commute Time Range:** 7:00 AM – 10:30 AM
+- **Cluster Centers:** 12 home + 8 office locations across Delhi NCR
+
+---
+
+## 📝 Usage Examples
+
+### Load and Use a Pre-trained Model
+```python
+import joblib
+import pandas as pd
+
+# Load the Random Forest acceptance model
+rf_model = joblib.load("models/weights/acceptance_rf.joblib")
+scaler = joblib.load("models/weights/acceptance_scaler.joblib")
+
+# Predict acceptance for a new pair
+features = [[0.75, 10, 0.8, 2.5, 1.2]]  # overlap, time_diff, acceptance_rate, home_dist, office_dist
+probability = rf_model.predict_proba(features)[0][1]
+print(f"Acceptance probability: {probability:.1%}")
+```
+
+### Call Backend API
+```dart
+// Flutter example
+final response = await http.post(
+  Uri.parse('http://localhost:8000/api/predict'),
+  body: jsonEncode({'user_a': 'U001', 'user_b': 'U002'}),
+);
+```
+
+---
+
+## 🤝 Contributing
+
+1. **Fork** the repository
+2. **Create** a feature branch: `git checkout -b feature/your-feature`
+3. **Commit** changes: `git commit -m "Add feature"`
+4. **Push** to branch: `git push origin feature/your-feature`
+5. **Open** a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
+
+---
+
+## 👥 Team
+
+- **Frontend:** [Collaborator Name]
+- **Backend/ML:** [Your Name]
+- **Advisors:** [Mentors]
+
+---
+
+*Built for smart urban mobility. Last updated: February 2026.*
+
+
