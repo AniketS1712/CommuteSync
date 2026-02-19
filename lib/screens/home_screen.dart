@@ -159,7 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildCongestionToggle() {
     return SwitchListTile(
       contentPadding: EdgeInsets.zero,
-      activeColor: AppColors.primary,
+      activeThumbColor: AppColors.primary,
       title: const Text(
         "High Congestion Day",
         style: TextStyle(color: Colors.white),
