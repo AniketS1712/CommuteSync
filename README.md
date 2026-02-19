@@ -2,9 +2,7 @@
 
 ## 🎥 Demo Video
 > A quick walkthrough of the main features and workflow.
-<video controls width="800">
-  <source src="https://raw.githubusercontent.com/AniketS1712/CommuteSync/main/CommuteSync_Video.mp4" type="video/mp4">
-</video>
+[▶️ Watch the demo here](https://github.com/AniketS1712/CommuteSync/blob/main/CommuteSync_Video.mp4)
 
 
 > **Intelligent Commuter Matching Powered by Machine Learning**
