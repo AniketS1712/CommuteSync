@@ -1,5 +1,7 @@
 # CommuteSync — Smart Carpooling with AI
 
+<video src="CommuteSync_Video.mp4" controls width="700"></video>
+
 > **Intelligent Commuter Matching Powered by Machine Learning**
 
 CommuteSync is a full-stack application combining a **Flutter mobile frontend** with **AI** to intelligently match commuters in Delhi, suggest optimal meeting points, predict acceptance rates, and optimize notification timing for maximum engagement.
