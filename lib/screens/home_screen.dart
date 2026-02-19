@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
+import '../core/fake_auth_service.dart';
+import '../core/page_transition.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/impact_card.dart';
 import '../widgets/match_info_block.dart';
@@ -18,6 +20,48 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int selectedIndex = 0;
 
+  bool isScanning = true;
+  bool highTrafficMode = false;
+
+  double matchConfidence = 0.0;
+  int matchedUsers = 0;
+  String delayRisk = "Moderate";
+
+  Map<String, dynamic>? user;
+
+  @override
+  void initState() {
+    super.initState();
+    user = FakeAuthService.currentUser;
+
+    Future.delayed(const Duration(seconds: 2), () {
+      _simulateAI();
+    });
+  }
+
+  void _simulateAI() {
+    final womenOnly = user?["womenOnlyMatching"] == true;
+    final gender = user?["gender"];
+
+    if (womenOnly && gender == "Female") {
+      matchedUsers = 1;
+      matchConfidence = highTrafficMode ? 0.75 : 0.62;
+      delayRisk = "Low";
+    } else if (womenOnly && gender != "Female") {
+      matchedUsers = 0;
+      matchConfidence = 0.0;
+      delayRisk = "Unavailable";
+    } else {
+      matchedUsers = 2;
+      matchConfidence = highTrafficMode ? 0.88 : 0.70;
+      delayRisk = highTrafficMode ? "High" : "Moderate";
+    }
+
+    setState(() {
+      isScanning = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,7 +76,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
               _buildHeader(),
 
-              const SizedBox(height: 30),
+              const SizedBox(height: 25),
+
+              _buildCongestionToggle(),
+
+              const SizedBox(height: 20),
 
               _buildMatchCard(),
 
@@ -67,22 +115,24 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHeader() {
+    final name = user?["name"] ?? "User";
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children: [
             Text(
-              "Street Coders",
-              style: TextStyle(
+              name,
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 6),
-            Row(
+            const SizedBox(height: 6),
+            const Row(
               children: [
                 Icon(Icons.circle, size: 10, color: AppColors.primary),
                 SizedBox(width: 6),
@@ -91,7 +141,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: TextStyle(
                     color: AppColors.primary,
                     fontWeight: FontWeight.w600,
-                    letterSpacing: 1,
                   ),
                 ),
               ],
@@ -107,7 +156,66 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildCongestionToggle() {
+    return SwitchListTile(
+      contentPadding: EdgeInsets.zero,
+      activeColor: AppColors.primary,
+      title: const Text(
+        "High Congestion Day",
+        style: TextStyle(color: Colors.white),
+      ),
+      value: highTrafficMode,
+      onChanged: (v) {
+        setState(() {
+          highTrafficMode = v;
+          isScanning = true;
+        });
+
+        Future.delayed(const Duration(seconds: 1), () {
+          _simulateAI();
+        });
+      },
+    );
+  }
+
   Widget _buildMatchCard() {
+    if (isScanning) {
+      return GlassCard(
+        child: Column(
+          children: const [
+            SizedBox(height: 20),
+            CircularProgressIndicator(color: AppColors.primary),
+            SizedBox(height: 20),
+            Text(
+              "Analyzing commute overlaps...",
+              style: TextStyle(color: Colors.white),
+            ),
+            SizedBox(height: 20),
+          ],
+        ),
+      );
+    }
+
+    if (matchedUsers == 0) {
+      return GlassCard(
+        child: Column(
+          children: const [
+            SizedBox(height: 20),
+            Icon(Icons.lock, color: Colors.pink),
+            SizedBox(height: 10),
+            Text(
+              "No eligible matches under current safety preferences.",
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white),
+            ),
+            SizedBox(height: 20),
+          ],
+        ),
+      );
+    }
+
+    final percentage = (matchConfidence * 100).toInt();
+
     return GlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -122,32 +230,28 @@ class _HomeScreenState extends State<HomeScreen> {
 
           const SizedBox(height: 10),
 
-          const Text(
-            "2 others have a 70% commute overlap tomorrow.",
-            style: TextStyle(color: Colors.white, fontSize: 16),
+          Text(
+            "$matchedUsers ${matchedUsers == 1 ? "commuter" : "commuters"} have a $percentage% overlap tomorrow.",
+            style: const TextStyle(color: Colors.white, fontSize: 16),
           ),
 
           const SizedBox(height: 20),
 
-          Row(
-            children: const [
-              Text(
-                "70% CONFIDENCE",
-                style: TextStyle(
-                  color: AppColors.primary,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
+          Text(
+            "$percentage% CONFIDENCE",
+            style: const TextStyle(
+              color: AppColors.primary,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
           ),
 
           const SizedBox(height: 8),
 
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
-            child: const LinearProgressIndicator(
-              value: 0.7,
+            child: LinearProgressIndicator(
+              value: matchConfidence,
               minHeight: 8,
               backgroundColor: Colors.white12,
               color: AppColors.primary,
@@ -156,10 +260,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
           const SizedBox(height: 25),
 
-          const Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              MatchInfoBlock(
+              const MatchInfoBlock(
                 icon: Icons.access_time,
                 label: "WINDOW",
                 value: "07:15 - 07:45",
@@ -167,7 +271,7 @@ class _HomeScreenState extends State<HomeScreen> {
               MatchInfoBlock(
                 icon: Icons.warning_amber_rounded,
                 label: "DELAY RISK",
-                value: "Moderate",
+                value: delayRisk,
               ),
             ],
           ),
@@ -179,7 +283,11 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const RideRoomScreen()),
+                SmoothPageRoute(
+                  page: RideRoomScreen(
+                    womenOnly: user?["womenOnlyMatching"] == true,
+                  ),
+                ),
               );
             },
           ),
@@ -201,15 +309,12 @@ class _HomeScreenState extends State<HomeScreen> {
         if (index == 2) {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const InsightsScreen()),
+            SmoothPageRoute(page: const InsightsScreen()),
           );
         }
 
         if (index == 3) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const ProfileScreen()),
-          );
+          Navigator.push(context, SmoothPageRoute(page: const ProfileScreen()));
         }
       },
       items: const [

@@ -1,3 +1,4 @@
+import 'package:commutesync/core/page_transition.dart';
 import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
 import '../widgets/section_label.dart';
@@ -118,7 +119,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const HomeScreen()),
+                    SmoothPageRoute(page: const HomeScreen()),
                   );
                 },
               ),

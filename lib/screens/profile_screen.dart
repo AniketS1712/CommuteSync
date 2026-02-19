@@ -1,12 +1,21 @@
+import 'package:commutesync/core/fake_auth_service.dart';
 import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
+import '../core/page_transition.dart';
 import '../widgets/glass_card.dart';
-import '../widgets/settings_tile.dart';
-import '../widgets/section_title.dart';
+import 'manage_subscription_screen.dart';
 import 'trust_safety_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  bool womenOnlyMatching =
+      FakeAuthService.currentUser?["womenOnlyMatching"] ?? false;
 
   @override
   Widget build(BuildContext context) {
@@ -15,8 +24,9 @@ class ProfileScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.backgroundGradientEnd,
         elevation: 0,
+        centerTitle: true,
         title: const Text(
-          "Profile & Settings",
+          "Settings",
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
@@ -26,47 +36,21 @@ class ProfileScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             children: [
-              const SizedBox(height: 30),
+              const SizedBox(height: 20),
 
               _buildProfileHeader(),
 
               const SizedBox(height: 30),
 
-              _buildAIStatus(),
+              _buildCommuteSection(),
 
               const SizedBox(height: 30),
 
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: SectionTitle(text: "SETTINGS"),
-              ),
+              _buildPrivacySection(),
 
-              const SizedBox(height: 15),
+              const SizedBox(height: 30),
 
-              SettingsTile(
-                icon: Icons.security,
-                title: "Trust & Safety",
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const TrustSafetyScreen(),
-                    ),
-                  );
-                },
-              ),
-
-              SettingsTile(
-                icon: Icons.notifications,
-                title: "Notifications",
-                onTap: () {},
-              ),
-
-              SettingsTile(
-                icon: Icons.edit,
-                title: "Edit Commute Details",
-                onTap: () {},
-              ),
+              _buildSubscriptionCard(),
 
               const SizedBox(height: 40),
 
@@ -80,52 +64,219 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  // ================= PROFILE HEADER =================
+
   Widget _buildProfileHeader() {
+    final user = FakeAuthService.currentUser;
+
+    final String name = user?["name"] ?? "User";
+    final String org = user?["organization"] ?? "Independent";
+    final String gender = user?["gender"] ?? "";
+
     return Column(
-      children: const [
-        CircleAvatar(
-          radius: 48,
-          backgroundColor: AppColors.darkCard,
-          child: Icon(Icons.person, size: 46, color: AppColors.primary),
+      children: [
+        Stack(
+          alignment: Alignment.bottomRight,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.primary, width: 2),
+              ),
+              child: CircleAvatar(
+                radius: 55,
+                backgroundColor: AppColors.darkCard,
+                child: Text(
+                  name.isNotEmpty ? name[0].toUpperCase() : "U",
+                  style: const TextStyle(
+                    fontSize: 40,
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.primary,
+              ),
+              child: const Icon(Icons.check, size: 16, color: Colors.black),
+            ),
+          ],
         ),
 
-        SizedBox(height: 14),
+        const SizedBox(height: 20),
 
         Text(
-          "Aniket Singhal",
-          style: TextStyle(
+          name,
+          style: const TextStyle(
             color: Colors.white,
-            fontSize: 22,
+            fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
         ),
 
-        SizedBox(height: 6),
+        const SizedBox(height: 6),
 
         Text(
-          "Street Coders • Verified",
-          style: TextStyle(
+          "$org • ${gender.toUpperCase()}",
+          style: const TextStyle(
             color: AppColors.primary,
-            fontSize: 14,
-            letterSpacing: 0.5,
+            letterSpacing: 1.5,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildAIStatus() {
-    return const GlassCard(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  // ================= COMMUTE INTELLIGENCE =================
+
+  Widget _buildCommuteSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "COMMUTE INTELLIGENCE",
+          style: TextStyle(color: AppColors.textSecondary, letterSpacing: 1.5),
+        ),
+        const SizedBox(height: 15),
+        GlassCard(
+          child: Column(
+            children: [
+              _tile(
+                icon: Icons.route,
+                title: "Edit Commute Routine",
+                subtitle: "Update shifts and locations",
+                onTap: () {},
+              ),
+              const Divider(color: Colors.white12),
+              _tile(
+                icon: Icons.business,
+                title: "Organization Status",
+                subtitle: "TechNexus Global HQ",
+                trailing: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withAlpha(45),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Text(
+                    "VERIFIED",
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                onTap: () {},
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ================= PRIVACY SECTION =================
+
+  Widget _buildPrivacySection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "PRIVACY & SAFETY",
+          style: TextStyle(color: AppColors.textSecondary, letterSpacing: 1.5),
+        ),
+        const SizedBox(height: 15),
+        GlassCard(
+          child: Column(
+            children: [
+              _tile(
+                icon: Icons.shield,
+                title: "Trust & Safety",
+                subtitle: "Verification and protection",
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    SmoothPageRoute(page: const TrustSafetyScreen()),
+                  );
+                },
+              ),
+              const Divider(color: Colors.white12),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text(
+                  "Women-only Matching",
+                  style: TextStyle(color: Colors.white),
+                ),
+                value: womenOnlyMatching,
+                activeThumbColor: AppColors.primary,
+                onChanged: (val) {
+                  setState(() {
+                    womenOnlyMatching = val;
+                    FakeAuthService.currentUser?["womenOnlyMatching"] = val;
+                  });
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ================= SUBSCRIPTION CARD =================
+
+  Widget _buildSubscriptionCard() {
+    return GlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("AI Status", style: TextStyle(color: AppColors.textSecondary)),
-          Text(
-            "Active",
+          const Text(
+            "PREMIUM PLAN",
             style: TextStyle(
               color: AppColors.primary,
               fontWeight: FontWeight.bold,
-              fontSize: 16,
+              letterSpacing: 1.5,
+            ),
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            "Unlock advanced AI route optimization, priority matching and deeper analytics.",
+            style: TextStyle(color: Colors.white70),
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  SmoothPageRoute(page: const ManageSubscriptionScreen()),
+                );
+              },
+              child: const Text(
+                "Manage Subscription",
+                style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
         ],
@@ -133,19 +284,52 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  // ================= LOGOUT =================
+
   Widget _buildLogoutButton() {
-    return OutlinedButton(
-      style: OutlinedButton.styleFrom(
-        minimumSize: Size(500, 50),
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        side: const BorderSide(color: AppColors.primary),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.red.withAlpha(45),
+        borderRadius: BorderRadius.circular(18),
       ),
-      onPressed: () {},
-      child: const Text(
-        "Log Out",
-        style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+      child: TextButton.icon(
+        icon: const Icon(Icons.logout, color: Colors.red),
+        label: const Text(
+          "Logout",
+          style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+        ),
+        onPressed: () {
+          FakeAuthService.logout();
+          Navigator.popUntil(context, (route) => route.isFirst);
+        },
       ),
+    );
+  }
+
+  Widget _tile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    Widget? trailing,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: AppColors.darkCard,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(icon, color: AppColors.primary),
+      ),
+      title: Text(title, style: const TextStyle(color: Colors.white)),
+      subtitle: Text(subtitle, style: const TextStyle(color: Colors.white54)),
+      trailing:
+          trailing ??
+          const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white54),
+      onTap: onTap,
     );
   }
 }

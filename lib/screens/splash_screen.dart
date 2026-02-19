@@ -1,8 +1,9 @@
+import 'package:commutesync/core/page_transition.dart';
+import 'package:commutesync/screens/sign_in_screen.dart';
 import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
 import '../widgets/privacy_badge.dart';
 import '../widgets/primary_button.dart';
-import 'onboarding_screen.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
@@ -41,18 +42,12 @@ class SplashScreen extends StatelessWidget {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => const OnboardingScreen(),
-                        ),
+                        SmoothPageRoute(page: const SignInScreen()),
                       );
                     },
                   ),
 
                   const SizedBox(height: 16),
-
-                  _buildOutlinedButton(),
-
-                  const SizedBox(height: 20),
 
                   const Text(
                     "By continuing, you agree to our Terms of Service and Privacy Policy.",
@@ -83,26 +78,6 @@ class SplashScreen extends StatelessWidget {
             AppColors.backgroundGradientStart,
             AppColors.backgroundGradientEnd,
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOutlinedButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: OutlinedButton(
-        style: OutlinedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 18),
-          side: BorderSide(color: Colors.white.withAlpha(100)),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
-          ),
-        ),
-        onPressed: () {},
-        child: const Text(
-          "Sign In",
-          style: TextStyle(color: AppColors.textSecondary),
         ),
       ),
     );

@@ -1,3 +1,4 @@
+import 'package:commutesync/widgets/fade_slide_in.dart';
 import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
 import '../widgets/glass_card.dart';
@@ -5,7 +6,8 @@ import '../widgets/chat_bubble.dart';
 import '../widgets/primary_button.dart';
 
 class RideRoomScreen extends StatefulWidget {
-  const RideRoomScreen({super.key});
+  final bool womenOnly;
+  const RideRoomScreen({super.key, required this.womenOnly});
 
   @override
   State<RideRoomScreen> createState() => _RideRoomScreenState();
@@ -93,10 +95,13 @@ class _RideRoomScreenState extends State<RideRoomScreen> {
         final msg = messages[index];
         final isMe = msg["name"] == "Aniket";
 
-        return ChatBubble(
-          message: msg["text"]!,
-          isMe: isMe,
-          name: msg["name"]!,
+        return FadeSlideIn(
+          delay: Duration(milliseconds: index * 80),
+          child: ChatBubble(
+            message: msg["text"]!,
+            isMe: isMe,
+            name: msg["name"]!,
+          ),
         );
       },
     );

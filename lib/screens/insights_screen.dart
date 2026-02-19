@@ -1,8 +1,4 @@
 import 'package:flutter/material.dart';
-import '../core/app_colors.dart';
-import '../widgets/glass_card.dart';
-import '../widgets/section_title.dart';
-import '../widgets/analytics_bar.dart';
 
 class InsightsScreen extends StatelessWidget {
   const InsightsScreen({super.key});
@@ -10,47 +6,44 @@ class InsightsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundGradientEnd,
+      backgroundColor: const Color(0xFF031F17),
       appBar: AppBar(
-        backgroundColor: AppColors.backgroundGradientEnd,
+        backgroundColor: const Color(0xFF031F17),
         elevation: 0,
         title: const Text(
-          "AI Insights",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          "YOUR IMPACT",
+          style: TextStyle(
+            color: Colors.white,
+            letterSpacing: 2,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.greenAccent),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.all(20),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              _buildEcoStatusCard(),
+
               const SizedBox(height: 20),
 
-              _buildStatusCard(),
+              _buildCO2Card(),
+
+              const SizedBox(height: 20),
+
+              _buildMeetingPointCard(),
 
               const SizedBox(height: 30),
 
-              const SectionTitle(text: "OVERLAP ANALYTICS"),
+              _buildStatsGrid(),
 
-              const SizedBox(height: 15),
+              const SizedBox(height: 30),
 
-              _buildBarChart(),
+              _buildExplanationCard(),
 
-              const SizedBox(height: 40),
-
-              const SectionTitle(text: "DELAY RISK MONITOR"),
-
-              const SizedBox(height: 20),
-
-              _buildDelayIndicator(),
-
-              const SizedBox(height: 40),
-
-              _buildTimeSavedCard(),
-
-              const SizedBox(height: 40),
+              const SizedBox(height: 30),
             ],
           ),
         ),
@@ -58,16 +51,64 @@ class InsightsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusCard() {
-    return const GlassCard(
-      child: Row(
+  Widget _buildMeetingPointCard() {
+    return Container(
+      height: 220,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0B3325), Color(0xFF062019)],
+        ),
+        boxShadow: [
+          BoxShadow(color: Colors.greenAccent.withAlpha(60), blurRadius: 25),
+        ],
+      ),
+      child: Stack(
         children: [
-          Icon(Icons.auto_graph, color: AppColors.primary),
-          SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              "Routine recalibration detected.\nAI confidence improved by 8% this week.",
-              style: TextStyle(color: Colors.white),
+          /// Fake Map Background
+          Positioned.fill(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: CustomPaint(painter: FakeMapPainter()),
+            ),
+          ),
+
+          /// Meeting Pin
+          const Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.location_on, color: Colors.greenAccent, size: 40),
+                SizedBox(height: 6),
+                Text(
+                  "North Junction",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          /// AI Badge
+          Positioned(
+            bottom: 16,
+            left: 16,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.greenAccent.withAlpha(45),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Text(
+                "3 MIN DETOUR PREDICTED",
+                style: TextStyle(
+                  color: Colors.greenAccent,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
             ),
           ),
         ],
@@ -75,56 +116,37 @@ class InsightsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBarChart() {
-    return const GlassCard(
-      padding: EdgeInsets.symmetric(vertical: 25, horizontal: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          AnalyticsBar(height: 40, label: "Mon"),
-          AnalyticsBar(height: 70, label: "Tue"),
-          AnalyticsBar(height: 55, label: "Wed"),
-          AnalyticsBar(height: 85, label: "Thu", highlighted: true),
-          AnalyticsBar(height: 65, label: "Fri"),
+  Widget _buildEcoStatusCard() {
+    return Container(
+      height: 140,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: const RadialGradient(
+          colors: [Color(0xFF0D5C3B), Color(0xFF053224)],
+          center: Alignment.center,
+          radius: 0.8,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.greenAccent.withAlpha(77),
+            blurRadius: 10,
+            spreadRadius: 3,
+          ),
         ],
       ),
-    );
-  }
-
-  Widget _buildDelayIndicator() {
-    return const Center(
-      child: SizedBox(
-        height: 140,
-        width: 140,
-        child: Stack(
-          alignment: Alignment.center,
+      child: const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(
-              value: 0.6,
-              strokeWidth: 12,
-              backgroundColor: Colors.white12,
-              color: AppColors.primary,
-            ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  "Moderate",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 6),
-                Text(
-                  "60% Risk",
-                  style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
+            Icon(Icons.eco, size: 40, color: Colors.greenAccent),
+            SizedBox(height: 10),
+            Text(
+              "ECO-WARRIOR STATUS",
+              style: TextStyle(
+                color: Colors.greenAccent,
+                letterSpacing: 2,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),
@@ -132,25 +154,239 @@ class InsightsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTimeSavedCard() {
-    return const GlassCard(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            "Time Saved This Week",
-            style: TextStyle(color: AppColors.textSecondary),
+  Widget _buildCO2Card() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0E3E2C), Color(0xFF072A1E)],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.greenAccent.withAlpha(60),
+            blurRadius: 10,
+            spreadRadius: 2,
           ),
-          Text(
-            "1h 42m",
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "TOTAL CO2 SAVED",
             style: TextStyle(
-              color: AppColors.primary,
+              color: Colors.greenAccent,
+              letterSpacing: 2,
               fontWeight: FontWeight.bold,
-              fontSize: 20,
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: const [
+              Text(
+                "1.2",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 60,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(width: 10),
+              Text(
+                "Tons",
+                style: TextStyle(
+                  color: Colors.greenAccent,
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 20),
+
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.greenAccent.withAlpha(40),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.trending_down, color: Colors.greenAccent, size: 16),
+                SizedBox(width: 6),
+                Text(
+                  "5% IMPROVEMENT",
+                  style: TextStyle(
+                    color: Colors.greenAccent,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildStatsGrid() {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _miniCard(
+                icon: Icons.directions_car,
+                label: "CARS REDUCED",
+                value: "24",
+                change: "↓ 12%",
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _miniCard(
+                icon: Icons.traffic,
+                label: "CONGESTION SCORE",
+                value: "88",
+                change: "↓ 10pts",
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _miniCard(
+                icon: Icons.warning_amber_rounded,
+                label: "DELAY RISK",
+                value: "22%",
+                change: "Low",
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _miniCard(
+                icon: Icons.timer,
+                label: "TIME SAVED",
+                value: "48m",
+                change: "+5 mins",
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _miniCard({
+    required IconData icon,
+    required String label,
+    required String value,
+    required String change,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0B3325), Color(0xFF07271C)],
+        ),
+        boxShadow: [BoxShadow(color: Colors.greenAccent.withAlpha(40))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Icon(icon, color: Colors.greenAccent),
+              Text(change, style: const TextStyle(color: Colors.greenAccent)),
+            ],
+          ),
+
+          const SizedBox(height: 20),
+
+          Text(
+            label,
+            style: const TextStyle(color: Colors.white54, letterSpacing: 1.5),
+          ),
+
+          const SizedBox(height: 10),
+
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 36,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExplanationCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0B2A20), Color(0xFF062019)],
+        ),
+      ),
+      child: const Text(
+        "Your urban sustainability contribution is calculated based on your unique commuting patterns over the last 30 days. By choosing smarter routes, you’ve directly impacted city air quality.",
+        style: TextStyle(color: Colors.white70, height: 1.6),
+      ),
+    );
+  }
+}
+
+class FakeMapPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint roadPaint = Paint()
+      ..color = Colors.white12
+      ..strokeWidth = 1.5;
+
+    final Paint gridPaint = Paint()
+      ..color = Colors.white10
+      ..strokeWidth = 1;
+
+    const double gap = 40.0;
+
+    // Draw subtle grid
+    for (double i = 0; i < size.width; i += gap) {
+      canvas.drawLine(Offset(i, 0), Offset(i, size.height), gridPaint);
+    }
+
+    for (double i = 0; i < size.height; i += gap) {
+      canvas.drawLine(Offset(0, i), Offset(size.width, i), gridPaint);
+    }
+
+    // Draw fake curved road
+    final Path path = Path();
+    path.moveTo(0, size.height * 0.6);
+    path.quadraticBezierTo(
+      size.width * 0.5,
+      size.height * 0.3,
+      size.width,
+      size.height * 0.7,
+    );
+
+    canvas.drawPath(path, roadPaint);
+  }
+
+  @override
+  bool shouldRepaint(FakeMapPainter oldDelegate) {
+    return false;
   }
 }
